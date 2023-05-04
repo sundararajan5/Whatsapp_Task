@@ -3,23 +3,26 @@
 /**
  * @type { Object.<string, import("knex").Knex.Config> }
  */
+
+require('dotenv').config();
+
 module.exports = {
 
   development: {
     client: 'mysql',
     connection: {
-      database: 'whatsapp',
-      user: 'root',
-      password: 'Sundar2001@'
+      database: process.env.DB,
+      user: process.env.USER,
+      password: process.env.PASS
     }
   },
 
   staging: {
     client: 'mysql',
     connection: {
-      database: 'whatsapp',
-      user: 'root',
-      password: 'Sundar2001@'
+      database: process.env.DB,
+      user: process.env.USER,
+      password: process.env.PASS
     },
     pool: {
       min: 2,
@@ -33,9 +36,9 @@ module.exports = {
   production: {
     client: 'mysql',
     connection: {
-      database: 'whatsapp',
-      user: 'root',
-      password: 'Sundar2001@'
+      database: process.env.DB,
+      user: process.env.USER,
+      password: process.env.PASS
     },
     pool: {
       min: 2,
