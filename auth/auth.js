@@ -4,6 +4,10 @@ const User = require('../model/user')
 const bcrypt = require('bcrypt');
 
 
+function structure(data, message, status) {
+    return { status, message, data }
+}
+
 
 const authAdmin = (req,res,next)=>{
     const token = req.headers['authorization']
@@ -17,10 +21,41 @@ const authAdmin = (req,res,next)=>{
             })
         }
         catch(err){
-            res.status(400).send(""+err)
+            res.status(400).json(structure(null,err,400))
         }
     })
 }
 
+const authUser = (req, res, next) => {
+    try {
+        const token = req.headers['authorization'];
 
-module.exports = { authAdmin }
+        jwt.verify(token, process.env.ACCESS_TOKEN, async (err, user) => {
+            if (err) {
+                res.status(403).json(structure(null,"token invalid",403))
+            }
+            else {
+                try {
+                    const jwt_role = await UserTable.findOne({email:user.email})
+                    bcrypt.compare(user.password, jwt_role.password, function (err, result) {
+                        if (jwt_role.role == "User" && result == true) {
+                            next();
+                        }
+                    })
+                }
+                catch (err) {
+                    res.status(403).json(structure(null,"Password mismatch",404))
+                }
+                }
+            })
+    
+    }
+    catch (err) {
+        res.send({ status: 404, message: "" + err })
+    }
+
+}
+
+
+
+module.exports = { authAdmin , authUser }
