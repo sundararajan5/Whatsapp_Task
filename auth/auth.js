@@ -51,7 +51,7 @@ const authUser = (req, res, next) => {
     
     }
     catch (err) {
-        res.send({ status: 404, message: "" + err })
+        res.status(400).json(structure(null,"error"+err,400))
     }
 
 }
