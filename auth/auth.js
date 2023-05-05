@@ -44,7 +44,7 @@ const authUser = (req, res, next) => {
                     })
                 }
                 catch (err) {
-                    res.status(403).json(structure(null,"Password mismatch",404))
+                    res.status(403).json(structure(null,"Password Incorrect",404))
                 }
                 }
             })
