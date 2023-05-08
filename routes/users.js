@@ -9,5 +9,7 @@ router.post('/login',tokenService.GenerateToken)
 router.post('/signup',userService.addUser)
 router.put('/update/:id',userService.updateUser)
 router.post('/addcontacts',contactService.addContacts)
+router.get('/contacts/:id',contactService.getById)
+router.put('/block',contactService.blkContact)
 
 module.exports = router
