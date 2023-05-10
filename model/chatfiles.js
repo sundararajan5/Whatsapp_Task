@@ -2,10 +2,9 @@ const { Model } = require('objection');
 const knex = require('../config/dbConfig');
 Model.knex(knex);
 
-class Contact extends Model {
+class ChatFiles extends Model {
     static get tableName() {
-        return 'contacts';
+        return 'chatfiles';
+    } 
     }
-
-}
-module.exports = Contact;
+module.exports = ChatFiles;

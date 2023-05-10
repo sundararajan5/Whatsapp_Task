@@ -9,53 +9,53 @@ function structure(data, message, status) {
 }
 
 
-const authAdmin = (req,res,next)=>{
+const authAdmin = (req, res, next) => {
     const token = req.headers['authorization']
-    jwt.verify(token,process.env.ACCESS_TOKEN, async(err,user)=>{
-        try{
-            const jwt_user = await User.query().findOne({email:user.email})
-            bcrypt.compare(user.password,jwt_user.password, function(err,result){
-                if(jwt_user.role == "admin"&& result==true){
+    jwt.verify(token, process.env.ACCESS_TOKEN, async (err, user) => {
+        try {
+            const jwt_user = await User.query().findOne({ email: user.email })
+            const comp = await bcrypt.compare(user.password, jwt_user.password)
+                if (jwt_user.role=="admin"&&comp == true) {
                     next();
                 }
-            })
+                
         }
-        catch(err){
-            res.status(400).json(structure(null,err,400))
+        catch (err) {
+            res.status(400).json(structure(null, err, 400))
         }
     })
 }
 
-const authUser = (req, res, next) => {
+const authUser = async (req, res, next) => {
     try {
         const token = req.headers['authorization'];
 
         jwt.verify(token, process.env.ACCESS_TOKEN, async (err, user) => {
             if (err) {
-                res.status(403).json(structure(null,"token invalid",403))
+                res.status(403).json(structure(null, "token invalid", 403))
             }
             else {
                 try {
-                    const jwt_role = await UserTable.findOne({email:user.email})
-                    bcrypt.compare(user.password, jwt_role.password, function (err, result) {
-                        if (jwt_role.role == "User" && result == true) {
+                    const jwt_role = await User.query().findOne({ email: user.email })
+                    const comp = await bcrypt.compare(user.password, jwt_role.password)
+                        if (jwt_role.role == "user"&&comp==true) {
+                            req.body.user = jwt_role.name
                             next();
                         }
-                    })
+                    
                 }
                 catch (err) {
-                    res.status(403).json(structure(null,"Password Incorrect",404))
+                    res.status(403).json(structure(null, "Password Incorrect", 404))
                 }
-                }
-            })
-    
+            }
+        })
     }
     catch (err) {
-        res.status(400).json(structure(null,"error"+err,400))
+        res.status(400).json(structure(null, "error" + err, 400))
     }
 
 }
 
 
 
-module.exports = { authAdmin , authUser }
+module.exports = { authAdmin, authUser }

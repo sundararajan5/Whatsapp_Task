@@ -15,8 +15,6 @@ const GenerateToken = (req, res) => {
         email: Joi.string().required(),
         password: Joi.string().required(),
     })
-
-
     const validate_Res = JoiSchema.validate(info);
     if (validate_Res.error) {
         res.status(404).json(structure(null, "Joi Validation Error " + validate_Res.error, 404))

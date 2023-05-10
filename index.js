@@ -3,6 +3,7 @@ const app = express();
 app.use(express.json())
 const users = require("./routes/users")
 const chats = require("./routes/chat")
+app.use(express.json())
 app.use("/user",users)
 app.use("/msg",chats.router)
 

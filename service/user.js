@@ -10,29 +10,38 @@ function structure(data, message, status) {
 const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
-      user: 'sundararajan@xponential.digital',
-      pass: 'fuoefbkbkblkasgr'
+        user: 'sundararajan@xponential.digital',
+        pass: 'fuoefbkbkblkasgr'
     }
-  });
-  
-  function mailsent(receiverMail,otp){
-  const mailOptions = {
-    from: 'sundararajan@xponential.digital',
-    to: receiverMail,
-    subject: 'Whatsapp Account Created',
-    text: `Your OTP is : ${otp}`
-    
-  };
+});
 
-  transporter.sendMail(mailOptions,function(error,info){
-    if(error){
-        console.log(error)
-    }
-    else{
-        console.log("Mail sent successfully" + info.response)
-    }
-  });
-  }
+function mailsent(receiverMail, otp) {
+    const mailOptions = {
+        from: 'sundararajan@xponential.digital',
+        to: receiverMail,
+        subject: 'Whatsapp Account Created',
+        text: `Your OTP is : ${otp}`
+
+    };
+
+    transporter.sendMail(mailOptions, function (error, info) {
+        if (error) {
+            console.log(error)
+        }
+        else {
+            console.log("Mail sent successfully" + info.response)
+        }
+    });
+}
+
+function otp_create() {
+    const otp_new = otp.generate({
+        length: 8,
+    })
+
+    return otp_new
+}
+
 
 
 const addUser = async (req, res) => {
@@ -42,14 +51,10 @@ const addUser = async (req, res) => {
         req.body.password = pass
         let info = req.body
 
+        const otp_new1 = otp_create()
 
-        const otp_new  = otp.generate({
-            length:8,
-        })
-
-        
         const userDetails = await Users.query().insert(info)
-        mailsent(req.body.email,otp_new)
+        mailsent(req.body.email, otp_new1)
         res.status(200).json(structure(userDetails, "signed in sucessfully", 200))
 
     }
@@ -59,15 +64,30 @@ const addUser = async (req, res) => {
     }
 }
 
-const updateUser =  async (req, res) => {
-    try{
+
+
+const updateUser = async (req, res) => {
+    try {
         let paramsId = req.params.id
         const updateDetails = await Users.query().findById(paramsId).patch(req.body);
-        res.status(200).json(structure(req.body,"Profile Updated",200))
+        res.status(200).json(structure(req.body, "Profile Updated", 200))
     }
-    catch(err){
-        res.status(400).json(structure(""+err,"error",400))
+    catch (err) {
+        res.status(400).json(structure("" + err, "error", 400))
     }
 }
 
-module.exports = { addUser,updateUser}
+
+const getAllusers = async (req,res) =>{
+    try{
+        const getAll = await Users.query()
+        res.status(200).json(structure(getAll,"List of All userDetails",200))
+    }
+    catch(err){
+        res.status(400).json(structure(""+err,"userDetails couldn't Fetch",400))
+    }
+}
+
+
+
+module.exports = { addUser, updateUser ,getAllusers}
