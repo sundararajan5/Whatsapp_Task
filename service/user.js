@@ -1,6 +1,7 @@
 const Users = require("../model/user");
 const bcrypt = require("bcrypt");
 const nodemailer = require('nodemailer')
+const otpGenerator = require('otp-generator')
 const otp = require('generate-password');
 const { symbol } = require("joi");
 
@@ -34,13 +35,10 @@ function mailsent(receiverMail, otp) {
     });
 }
 
-function otp_create() {
+
     const otp_new = otp.generate({
         length: 8,
     })
-
-    return otp_new
-}
 
 
 
@@ -51,12 +49,9 @@ const addUser = async (req, res) => {
         req.body.password = pass
         let info = req.body
 
-        const otp_new1 = otp_create()
-
         const userDetails = await Users.query().insert(info)
-        mailsent(req.body.email, otp_new1)
+        mailsent(req.body.email, otp_new)
         res.status(200).json(structure(userDetails, "signed in sucessfully", 200))
-
     }
     catch (err) {
         console.log("error" + err)
@@ -68,8 +63,14 @@ const addUser = async (req, res) => {
 
 const updateUser = async (req, res) => {
     try {
-        let paramsId = req.params.id
-        const updateDetails = await Users.query().findById(paramsId).patch(req.body);
+        if(req.body.password){
+            const pass = await bcrypt.hash(req.body.password, 5)
+            req.body.password = pass
+        }
+        if(req.body.role){
+            return res.status(200).json(structure(null,"You Cannot change Role",404))
+        }
+        const updateDetails = await Users.query().findById(req.body.id).update(req.body);
         res.status(200).json(structure(req.body, "Profile Updated", 200))
     }
     catch (err) {
@@ -80,7 +81,7 @@ const updateUser = async (req, res) => {
 
 const getAllusers = async (req,res) =>{
     try{
-        const getAll = await Users.query()
+        const getAll = await Users.query().select('name','email','role','phonenumber').where('role','user')
         res.status(200).json(structure(getAll,"List of All userDetails",200))
     }
     catch(err){
@@ -90,4 +91,25 @@ const getAllusers = async (req,res) =>{
 
 
 
-module.exports = { addUser, updateUser ,getAllusers}
+
+
+const signUp = async (req,res)=>{
+    try{
+        const wOtp=otpGenerator.generate(6, { digits:true , specialChars:false,lowerCaseAlphabets:false,upperCaseAlphabets:false });
+        req.body.otp = wOtp
+        let values = req.body
+        mailsent(values.email,wOtp)
+        const sign_up = await Users.query().insert(values)
+        return res.send("User Created")
+    }
+    catch(err){
+        res.send(err)
+    }
+}
+
+
+
+
+
+
+module.exports = { addUser, updateUser ,getAllusers , signUp}

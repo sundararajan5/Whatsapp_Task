@@ -4,8 +4,8 @@ const auth = require('../auth/auth.js')
 const contactService = require("../service/contacts.js");
 const tokenService = require("../service/token.js")
 
-router.post('/addcontacts', contactService.addContacts)
-router.get('/contacts/:id', contactService.getById)
-router.put('/block', contactService.blkContact)
+router.post('/addcontacts',auth.authUser, contactService.addContacts)
+router.get('/myList',auth.authUser, contactService.getById)
+router.put('/block', auth.authUser,contactService.blkContact)
 
-module.exports=router
+module.exports={router}

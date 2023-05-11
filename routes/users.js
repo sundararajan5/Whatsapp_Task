@@ -7,7 +7,8 @@ const tokenService = require("../service/token.js")
 
 router.post('/login', tokenService.GenerateToken)
 router.post('/signup', userService.addUser)
-router.put('/update/:id', userService.updateUser)
+router.post('/otp', userService.signUp)
+router.put('/update',auth.authUser,userService.updateUser)
 router.get('/getAll',auth.authAdmin,userService.getAllusers)
 
-module.exports = router
+module.exports = {router}
