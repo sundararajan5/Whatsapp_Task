@@ -7,7 +7,7 @@ const tokenService = require("../service/token.js")
 
 router.post('/login', tokenService.GenerateToken)
 router.post('/signup', userService.addUser)
-router.post('/otp', userService.signUp)
+router.post('/otp', userService.verification)
 router.put('/update',auth.authUser,userService.updateUser)
 router.get('/getAll',auth.authAdmin,userService.getAllusers)
 

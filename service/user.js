@@ -5,6 +5,9 @@ const otpGenerator = require('otp-generator')
 const otp = require('generate-password');
 const { symbol } = require("joi");
 
+let otp_Mail;
+let userdetails = {}
+
 function structure(data, message, status) {
     return { status, message, data }
 }
@@ -36,22 +39,13 @@ function mailsent(receiverMail, otp) {
 }
 
 
-    const otp_new = otp.generate({
-        length: 8,
-    })
-
-
 
 const addUser = async (req, res) => {
-
-    const pass = await bcrypt.hash(req.body.password, 5)
     try {
-        req.body.password = pass
-        let info = req.body
-
-        const userDetails = await Users.query().insert(info)
-        mailsent(req.body.email, otp_new)
-        res.status(200).json(structure(userDetails, "signed in sucessfully", 200))
+        userdetails = req.body
+        otp_Mail = otpGenerator.generate(6, { digits: true, specialChars: false, lowerCaseAlphabets: false, upperCaseAlphabets: false });
+        mailsent(userdetails.email, otp_Mail)
+        res.status(200).json(structure(userdetails, "Verification Mail Sent sucessfully", 200))
     }
     catch (err) {
         console.log("error" + err)
@@ -60,15 +54,29 @@ const addUser = async (req, res) => {
 }
 
 
+const verification = async (req, res) => {
+    console.log(userdetails)
+    const pass = await bcrypt.hash(userdetails.password, 5)
+    userdetails.password = pass
+    if (otp_Mail == req.body.otp){
+        const userDetails = await Users.query().insert(userdetails)
+        res.status(200).json(structure(userDetails, "Your Account Verified Successfully"))
+    }
+    else{
+        res.status(200).json(structure(null,"Otp Is Incorrect"))
+    }
+
+}
+
 
 const updateUser = async (req, res) => {
     try {
-        if(req.body.password){
+        if (req.body.password) {
             const pass = await bcrypt.hash(req.body.password, 5)
             req.body.password = pass
         }
-        if(req.body.role){
-            return res.status(200).json(structure(null,"You Cannot change Role",404))
+        if (req.body.role) {
+            return res.status(200).json(structure(null, "You Cannot change Role", 404))
         }
         const updateDetails = await Users.query().findById(req.body.id).update(req.body);
         res.status(200).json(structure(req.body, "Profile Updated", 200))
@@ -79,31 +87,13 @@ const updateUser = async (req, res) => {
 }
 
 
-const getAllusers = async (req,res) =>{
-    try{
-        const getAll = await Users.query().select('name','email','role','phonenumber').where('role','user')
-        res.status(200).json(structure(getAll,"List of All userDetails",200))
+const getAllusers = async (req, res) => {
+    try {
+        const getAll = await Users.query().select('name', 'email', 'role', 'phonenumber').where('role', 'user')
+        res.status(200).json(structure(getAll, "List of All userDetails", 200))
     }
-    catch(err){
-        res.status(400).json(structure(""+err,"userDetails couldn't Fetch",400))
-    }
-}
-
-
-
-
-
-const signUp = async (req,res)=>{
-    try{
-        const wOtp=otpGenerator.generate(6, { digits:true , specialChars:false,lowerCaseAlphabets:false,upperCaseAlphabets:false });
-        req.body.otp = wOtp
-        let values = req.body
-        mailsent(values.email,wOtp)
-        const sign_up = await Users.query().insert(values)
-        return res.send("User Created")
-    }
-    catch(err){
-        res.send(err)
+    catch (err) {
+        res.status(400).json(structure("" + err, "userDetails couldn't Fetch", 400))
     }
 }
 
@@ -112,4 +102,4 @@ const signUp = async (req,res)=>{
 
 
 
-module.exports = { addUser, updateUser ,getAllusers , signUp}
+module.exports = { addUser, updateUser, getAllusers, verification }

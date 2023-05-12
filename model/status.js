@@ -13,7 +13,7 @@ class StatusTable extends Model {
             properties: {
                 id: { type: 'integer' },
                 user_id: { type: 'integer' },
-                status_File_Name: { type: 'number' },
+                status_File_Name: { type: 'string' },
                 sent_Status_Time: { type: 'string' }
             }
         }
