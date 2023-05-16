@@ -3,7 +3,7 @@ const bcrypt = require("bcrypt");
 const nodemailer = require('nodemailer')
 const otpGenerator = require('otp-generator')
 const otp = require('generate-password');
-const { symbol } = require("joi");
+const { symbol, string } = require("joi");
 
 let otp_Mail;
 let userdetails = {}
@@ -40,6 +40,19 @@ function mailsent(receiverMail, otp) {
 
 
 
+const accountSid = process.env.AC_SID;
+const authToken = process.env.Auth_Token;
+const client = require('twilio')(accountSid, authToken);
+
+client.messages.create({
+     body: 'This is the ship that made the Kessel Run in fourteen parsecs?',
+     from: '+12707166899',
+     to: '+919788390608'
+   }).then(message => console.log(message.sid));
+
+
+
+
 const addUser = async (req, res) => {
     try {
         userdetails = req.body
@@ -58,12 +71,18 @@ const verification = async (req, res) => {
     console.log(userdetails)
     const pass = await bcrypt.hash(userdetails.password, 5)
     userdetails.password = pass
-    if (otp_Mail == req.body.otp){
-        const userDetails = await Users.query().insert(userdetails)
-        res.status(200).json(structure(userDetails, "Your Account Verified Successfully"))
+    if (otp_Mail == req.body.otp) {
+        try {
+            const userDetails = await Users.query().insert(userdetails)
+            res.status(200).json(structure(userDetails, "Your Account Verified Successfully"))
+        }
+        catch(err){
+            res.status(400).json(structure(null,""+err,400))
+        }
+        
     }
-    else{
-        res.status(200).json(structure(null,"Otp Is Incorrect"))
+    else {
+        res.status(200).json(structure(null, "Otp Is Incorrect"))
     }
 
 }

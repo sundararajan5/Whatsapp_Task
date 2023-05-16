@@ -20,7 +20,7 @@ const addContacts = async (req, res) => {
         let info = {
             name: req.body.name,
             phonenumber: req.body.phonenumber,
-            email:req.body.email,
+            email: req.body.email,
             reg: req.body.reg,
             reg_user_id: req.id,
             status: req.body.status
@@ -29,30 +29,41 @@ const addContacts = async (req, res) => {
         res.status(200).json(structure(contactDetails, "Conatact Added Successfully", 200))
     }
     catch (err) {
-        console.log("error" + err)
-        res.status(400).json(structure("" + err, "", 400))
+        res.status(400).json(structure(null,""+err, 400))
     }
 }
 
 
 
 const getById = async (req, res) => {
-    const contacts = await Contact.query().select('name','phonenumber').where('reg_user_id',req.id)
-    res.status(400).json(structure(contacts, "Your Contact List ", 200))
+    try {
+        const contacts = await Contact.query().select('name', 'phonenumber').where('reg_user_id', req.id)
+        res.status(400).json(structure(contacts, "Your Contact List ", 200))
+    }
+    catch (err) {
+        res.status(400).json(structure(null,"" + err,400))
+    }
+
 }
 
 
 const blkContact = async (req, res) => {
-     const block = await Contact.query().where('reg_user_id',req.id ).where('phonenumber',req.body.phonenumber)
-     console.log(block)
-     if(block[0].status=='Blocked'){
-        return res.status(400).json(structure(null,"Already Blocked",400))
-     }
-     else{
-        req.body.status = 'Blocked'
-        const uptBlock = await Contact.query().where('reg_user_id',req.id ).where('phonenumber',req.body.phonenumber).update(req.body)
-        return res.status(200).json(structure(null,"Blocked the Contact",200))
-     }
+    const block = await Contact.query().where('reg_user_id', req.id).where('phonenumber', req.body.phonenumber)
+    console.log(block)
+    if (block[0].status == 'Blocked') {
+        return res.status(400).json(structure(null, "Already Blocked", 400))
+    }
+    else {
+        try {
+            req.body.status = 'Blocked'
+            const uptBlock = await Contact.query().where('reg_user_id', req.id).where('phonenumber', req.body.phonenumber).update(req.body)
+            return res.status(200).json(structure(null, "Blocked the Contact", 200))
+        }
+        catch(err){
+            res.status(400).json(structure(null,""+err,400))
+        }
+        
+    }
 }
 
 
