@@ -6,7 +6,9 @@ const path = require('path');
 const multer = require('multer');
 const timediff = require('timediff');
 const { date } = require('joi');
-const Contact = require('../model/contact')
+const Contact = require('../model/contact');
+const Users = require('../model/user');
+const { log } = require('console');
 
 
 function structure(data, message, status) {
@@ -49,8 +51,8 @@ function mailsent(receiverMail) {
 const diff = async (req, res) => {
     try {
         let info = {
-            StatusDltTime:req.body.StatusDltTime,
-            ChatDltTime:req.body.ChatDltTime
+            StatusDltTime: req.body.StatusDltTime,
+            ChatDltTime: req.body.ChatDltTime
         }
         const changeTime = await Dlt.query().findById(1).update(info)
         res.status(200).json(structure(null, "Delete Time will changed ", 200))
@@ -64,12 +66,31 @@ const diff = async (req, res) => {
 
 const rplyChat = async (req, res) => {
     try {
-        const id = await Contact.query().findOne({ id: req.body.receiver_id })
-        if (id.status == 'Blocked') {
+        const user = await Users.query().findById(req.body.receiver_id)
+        if (!user) {
+            return res.send("User not exist")
+        }
+        const id1 = await Contact.query().findOne({ reg_user_id: req.id, phonenumber: user.phonenumber })
+        console.log("---------------------------------------");
+        console.log(user);
+        console.log("---------------------------------------");
+        console.log(id1)
+
+        const cnt = await Chat.query().findOne({ id: req.body.chat_reply_id })
+        console.log("---------------------------------------");
+        console.log(cnt);
+        if (!((cnt.sender_id == req.id && cnt.receiver_id == req.body.receiver_id) || (cnt.sender_id == req.body.receiver_id && cnt.receiver_id == req.id))) {
+            return res.send("this not your chat reply")
+        }
+        if (id1 == null) {
+            return res.send("He/she not your Contact")
+        }
+        // const id = await Contact.query().findOne({ id: req.body.receiver_id })
+        if (id1.status == 'Blocked') {
             return res.status(200).json(structure(null, "You Blocked this Person So you cant send message", 200))
         }
-        if (id.reg == 'Invite') {
-            mailsent(id.email)
+        if (id1.reg == 'Invite') {
+            mailsent(id1.email)
             return res.status(200).json(structure(null, "He is not in Whatsapp!! Invite Mail sent!", 200))
         }
         let info = {
@@ -90,15 +111,28 @@ const rplyChat = async (req, res) => {
 
 const sendChat = async (req, res) => {
     try {
-
-        const id = await Contact.query().findOne({ id: req.body.receiver_id })
-        if (id.status == 'Blocked') {
+        const user = await Users.query().findById(req.body.receiver_id)
+        if (!user) {
+            return res.send("User not exist")
+        }
+        const id1 = await Contact.query().findOne({ reg_user_id: req.id, phonenumber: user.phonenumber })
+        console.log("---------------------------------------");
+        console.log(user);
+        console.log("---------------------------------------");
+        console.log(id1)
+        if (id1 == null) {
+            return res.send("He/she not your Contact")
+        }
+        // const id = await Contact.query().findOne({ id: req.body.receiver_id })
+        if (id1.status == 'Blocked') {
             return res.status(200).json(structure(null, "You Blocked this Person So you cant send message", 200))
         }
-        if (id.reg == 'Invite') {
-            mailsent(id.email)
+        if (id1.reg == 'Invite') {
+            mailsent(id1.email)
             return res.status(200).json(structure(null, "He is not in Whatsapp!! Invite Mail sent!", 200))
         }
+
+
         let info = {
             sender_id: req.id,
             receiver_id: req.body.receiver_id,
@@ -119,27 +153,34 @@ const sendChat = async (req, res) => {
 const dltchat = async (req, res) => {
 
     try {
+        const reqParams = Number(req.params.id)
+        const cnt = await Chat.query().findOne({ id: reqParams })
+        console.log(cnt);
+        if (!((cnt.sender_id == req.id && cnt.receiver_id == req.body.receiver_id) || (cnt.sender_id == req.body.receiver_id && cnt.receiver_id == req.id))) {
+            return res.send("this not your chat reply")
+        }
         const chatDetail = await Chat.query().findById(req.params.id)
         const time = timediff(chatDetail.sentTime, new Date(), 'H')
         console.log(time.hours);
-        console.log(deleteTime)
         const timing = await Dlt.query().findById(1)
         console.log(timing.ChatDltTime)
-        if ((time.hours) >=timing.ChatDltTime) {
+        if ((time.hours) >= timing.ChatDltTime) {
             res.status(400).json(structure(null, "You can't Delete this message!!", 400))
         }
         else {
             try {
-                const dltProd = await Chat.query().delete().where({ id: req.params.id })
+                const sdf = { chat_reply_id: null }
+                const adsf = await Chat.query().where('chat_reply_id', reqParams).update(sdf)
+                const dltProd = await Chat.query().delete().where({ id: reqParams })
                 res.status(200).send({ status: 200, message: "Message Deleted Successfully" });
             }
-            catch {
-                res.status(400).json(structure(null, "Message not Deleted", 400))
+            catch (err) {
+                res.status(400).json(structure(null, "Message not Deleted" + err, 400))
             }
 
         }
     } catch (err) {
-        res.status(404).json(structure(null, "Cannot find User - ", 400))
+        res.status(404).json(structure(null, "Cannot find User - " + err, 400))
     }
 }
 
@@ -184,12 +225,24 @@ const sentImg = async (req, res) => {
             }
             else {
                 try {
+
+                    const user = await Users.query().findById(req.params.id)
+                    if (!user) {
+                        return res.send("User not exist")
+                    }
+                    const id1 = await Contact.query().findOne({ reg_user_id: chat_sender, phonenumber: user.phonenumber })
+                    console.log("---------------------------------------");
+                    console.log(user);
+                    console.log("---------------------------------------");
+                    console.log(id1)
+                    if (id1 == null) {
+                        return res.send("He/she not your Contact")
+                    }
                     req.body.chat_message = "media"
                     req.body.chat_MediaName = name + new Date() + extn
                     req.body.sender_id = chat_sender
                     req.body.sentTime = new Date()
-                    rec_id = Number(req.params.id)
-                    req.body.receiver_id = rec_id
+                    req.body.receiver_id = Number(req.params.id)
                     let fileDetails = req.body
                     console.log(fileDetails)
                     let filesUploads = await Chat.query().insert(fileDetails)
@@ -292,7 +345,8 @@ const dltstatus = async (req, res) => {
 const getChatMsg = async (req, res) => {
     try {
 
-        const contacts = await Chat.query().select('chats.chat_message', 'contacts.name').joinRelated(Contact).leftJoin('contacts', 'chats.receiver_id', 'contacts.id').where('sender_id', req.id).where('receiver_id', req.params.id).orWhere('sender_id', req.params.id).where('receiver_id', req.id)
+        const contacts = await Chat.query().select('chats.chat_message', 'user.name').joinRelated(Contact).leftJoin('user', 'chats.receiver_id', 'user.id').where('sender_id', req.id).where('receiver_id', req.params.id).orWhere('sender_id', req.params.id).where('receiver_id', req.id)
+        // const contacts1 = await Chat.query().select('chats.chat_message', 'contacts.name').joinRelated().leftJoin('contacts', 'chats.receiver_id', 'user.id').where('sender_id', req.id).where('receiver_id', req.params.id).orWhere('sender_id', req.params.id).where('receiver_id', req.id)
         res.status(200).json(structure(contacts, "Chat messages", 200))
     }
     catch (err) {
@@ -300,7 +354,6 @@ const getChatMsg = async (req, res) => {
     }
 
 }
-
 
 
 module.exports = { sendChat, dltchat, sentImg, diff, getChatMsg, sentStatus, dltstatus, rplyChat }
