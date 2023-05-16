@@ -39,20 +39,6 @@ function mailsent(receiverMail, otp) {
 }
 
 
-
-const accountSid = process.env.AC_SID;
-const authToken = process.env.Auth_Token;
-const client = require('twilio')(accountSid, authToken);
-
-client.messages.create({
-     body: 'This is the ship that made the Kessel Run in fourteen parsecs?',
-     from: '+12707166899',
-     to: '+919788390608'
-   }).then(message => console.log(message.sid));
-
-
-
-
 const addUser = async (req, res) => {
     try {
         userdetails = req.body
