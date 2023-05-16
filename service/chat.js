@@ -1,5 +1,5 @@
 const Chat = require('../model/chats')
-const ChatFiles = require('../model/chatfiles')
+const Dlt = require('../model/dltTiming')
 const SendStatus = require('../model/status')
 const nodemailer = require('nodemailer')
 const path = require('path');
@@ -45,12 +45,15 @@ function mailsent(receiverMail) {
 
 
 
-let deleteTime = 1
 
 const diff = async (req, res) => {
     try {
-        deleteTime = req.body.time
-        res.status(200).json(structure(null, "Delete Time will changed to " + deleteTime, 200))
+        let info = {
+            StatusDltTime:req.body.StatusDltTime,
+            ChatDltTime:req.body.ChatDltTime
+        }
+        const changeTime = await Dlt.query().findById(1).update(info)
+        res.status(200).json(structure(null, "Delete Time will changed ", 200))
     }
     catch (err) {
         return res.status(400).json(structure(null, "" + err, 400))
@@ -58,18 +61,6 @@ const diff = async (req, res) => {
 
 }
 
-
-let statusTime = 1
-const statusdiff = async (req, res) => {
-    try {
-        statusTime = req.body.time
-        res.status(200).json(structure(null, "Status Delete Time will changed to " + statusTime, 200))
-    }
-    catch (err) {
-        return res.status(400).json(structure(null, "" + err, 400))
-    }
-
-}
 
 const rplyChat = async (req, res) => {
     try {
@@ -132,7 +123,9 @@ const dltchat = async (req, res) => {
         const time = timediff(chatDetail.sentTime, new Date(), 'H')
         console.log(time.hours);
         console.log(deleteTime)
-        if ((time.hours) >= deleteTime) {
+        const timing = await Dlt.query().findById(1)
+        console.log(timing.ChatDltTime)
+        if ((time.hours) >=timing.ChatDltTime) {
             res.status(400).json(structure(null, "You can't Delete this message!!", 400))
         }
         else {
@@ -276,8 +269,9 @@ const dltstatus = async (req, res) => {
         console.log(statusDetail.sent_Status_Time)
         const time1 = timediff(statusDetail.sent_Status_Time, new Date(), 'H')
         console.log(time1.hours);
-        console.log(statusTime)
-        if ((time1.hours) >= statusTime) {
+        const timing = await Dlt.query().findById(1)
+        console.log(timing.StatusDltTime)
+        if ((time1.hours) >= timing.StatusDltTime) {
             try {
                 const dltProd = await SendStatus.query().delete().where({ id: req.params.id })
                 res.status(200).json(structure(null, "Status Deleted Successfully", 200))
@@ -309,4 +303,4 @@ const getChatMsg = async (req, res) => {
 
 
 
-module.exports = { sendChat, dltchat, sentImg, diff, getChatMsg, sentStatus, dltstatus, rplyChat, statusdiff }
+module.exports = { sendChat, dltchat, sentImg, diff, getChatMsg, sentStatus, dltstatus, rplyChat }
