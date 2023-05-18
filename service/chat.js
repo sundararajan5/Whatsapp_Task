@@ -68,24 +68,17 @@ const rplyChat = async (req, res) => {
     try {
         const user = await Users.query().findById(req.body.receiver_id)
         if (!user) {
-            return res.send("User not exist")
+            return res.status(400).json(structure(null,"User Not Exixts in your contact", 400))
         }
         const id1 = await Contact.query().findOne({ reg_user_id: req.id, phonenumber: user.phonenumber })
-        console.log("---------------------------------------");
-        console.log(user);
-        console.log("---------------------------------------");
-        console.log(id1)
-
         const cnt = await Chat.query().findOne({ id: req.body.chat_reply_id })
-        console.log("---------------------------------------");
-        console.log(cnt);
+    
         if (!((cnt.sender_id == req.id && cnt.receiver_id == req.body.receiver_id) || (cnt.sender_id == req.body.receiver_id && cnt.receiver_id == req.id))) {
-            return res.send("this not your chat reply")
+             return res.status(400).json(structure(null,"This is not your chat reply", 400))
         }
         if (id1 == null) {
-            return res.send("He/she not your Contact")
+            return res.status(400).json(structure(null,"He/She is not in your Contact", 400))
         }
-        // const id = await Contact.query().findOne({ id: req.body.receiver_id })
         if (id1.status == 'Blocked') {
             return res.status(200).json(structure(null, "You Blocked this Person So you cant send message", 200))
         }
@@ -113,17 +106,12 @@ const sendChat = async (req, res) => {
     try {
         const user = await Users.query().findById(req.body.receiver_id)
         if (!user) {
-            return res.send("User not exist")
+            return res.status(400).json(structure(null,"User Not Exixts in your contact", 400))
         }
         const id1 = await Contact.query().findOne({ reg_user_id: req.id, phonenumber: user.phonenumber })
-        console.log("---------------------------------------");
-        console.log(user);
-        console.log("---------------------------------------");
-        console.log(id1)
         if (id1 == null) {
-            return res.send("He/she not your Contact")
+            return res.status(400).json(structure(null,"He/She is not in your Contact", 400))
         }
-        // const id = await Contact.query().findOne({ id: req.body.receiver_id })
         if (id1.status == 'Blocked') {
             return res.status(200).json(structure(null, "You Blocked this Person So you cant send message", 200))
         }
@@ -155,9 +143,8 @@ const dltchat = async (req, res) => {
     try {
         const reqParams = Number(req.params.id)
         const cnt = await Chat.query().findOne({ id: reqParams })
-        console.log(cnt);
         if (!((cnt.sender_id == req.id && cnt.receiver_id == req.body.receiver_id) || (cnt.sender_id == req.body.receiver_id && cnt.receiver_id == req.id))) {
-            return res.send("this not your chat reply")
+            return res.status(400).json(structure(null,"Ivalid users Chat reply message", 400))
         }
         const chatDetail = await Chat.query().findById(req.params.id)
         const time = timediff(chatDetail.sentTime, new Date(), 'H')
@@ -228,15 +215,11 @@ const sentImg = async (req, res) => {
 
                     const user = await Users.query().findById(req.params.id)
                     if (!user) {
-                        return res.send("User not exist")
+                        return res.status(400).json(structure(null,"Enter a valid User!!", 400))
                     }
                     const id1 = await Contact.query().findOne({ reg_user_id: chat_sender, phonenumber: user.phonenumber })
-                    console.log("---------------------------------------");
-                    console.log(user);
-                    console.log("---------------------------------------");
-                    console.log(id1)
                     if (id1 == null) {
-                        return res.send("He/she not your Contact")
+                        return res.status(400).json(structure(null,"He/She is not in your Contact", 400))
                     }
                     req.body.chat_message = "media"
                     req.body.chat_MediaName = name + new Date() + extn
@@ -244,7 +227,6 @@ const sentImg = async (req, res) => {
                     req.body.sentTime = new Date()
                     req.body.receiver_id = Number(req.params.id)
                     let fileDetails = req.body
-                    console.log(fileDetails)
                     let filesUploads = await Chat.query().insert(fileDetails)
                     res.status(200).json(structure(fileDetails, "Media Sent SuccessFully", 200))
 
@@ -338,7 +320,7 @@ const dltstatus = async (req, res) => {
             res.status(400).json(structure(null, "24 Hours not completed", 400))
         }
     } catch (err) {
-        res.status(404).json(structure(null, "" + err, 404))
+        res.status(404).json(structure(null, ""+err, 404))
     }
 }
 
@@ -346,7 +328,6 @@ const getChatMsg = async (req, res) => {
     try {
 
         const contacts = await Chat.query().select('chats.chat_message', 'user.name').joinRelated(Contact).leftJoin('user', 'chats.receiver_id', 'user.id').where('sender_id', req.id).where('receiver_id', req.params.id).orWhere('sender_id', req.params.id).where('receiver_id', req.id)
-        // const contacts1 = await Chat.query().select('chats.chat_message', 'contacts.name').joinRelated().leftJoin('contacts', 'chats.receiver_id', 'user.id').where('sender_id', req.id).where('receiver_id', req.params.id).orWhere('sender_id', req.params.id).where('receiver_id', req.id)
         res.status(200).json(structure(contacts, "Chat messages", 200))
     }
     catch (err) {
