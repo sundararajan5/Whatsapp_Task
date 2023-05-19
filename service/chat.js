@@ -11,6 +11,13 @@ const Users = require('../model/user');
 const { log } = require('console');
 
 
+let statusname;
+let name;
+let extn;
+let status_extn;
+let auth_userid;
+let chat_sender;
+
 function structure(data, message, status) {
     return { status, message, data }
 }
@@ -79,13 +86,7 @@ const rplyChat = async (req, res) => {
         if (id1 == null) {
             return res.status(400).json(structure(null,"He/She is not in your Contact", 400))
         }
-        if (id1.status == 'Blocked') {
-            return res.status(200).json(structure(null, "You Blocked this Person So you cant send message", 200))
-        }
-        if (id1.reg == 'Invite') {
-            mailsent(id1.email)
-            return res.status(200).json(structure(null, "He is not in Whatsapp!! Invite Mail sent!", 200))
-        }
+
         let info = {
             sender_id: req.id,
             receiver_id: req.body.receiver_id,
@@ -104,26 +105,26 @@ const rplyChat = async (req, res) => {
 
 const sendChat = async (req, res) => {
     try {
-        const user = await Users.query().findById(req.body.receiver_id)
+        const user = await Users.query().findOne({email:req.body.email})
+        console.log(user)
         if (!user) {
+            const invitePerson = await Contact.query().findOne({ reg_user_id: req.id, email: req.body.email })
+         if(invitePerson.reg =="Invite"){
+            mailsent(invitePerson.email)
+            return res.status(200).json(structure(null, "He is not in Whatsapp!! Invite Mail sent!", 200))
+        }
             return res.status(400).json(structure(null,"User Not Exixts in your contact", 400))
         }
         const id1 = await Contact.query().findOne({ reg_user_id: req.id, phonenumber: user.phonenumber })
+        console.log(id1)
+        console.log(req.id)
         if (id1 == null) {
             return res.status(400).json(structure(null,"He/She is not in your Contact", 400))
         }
-        if (id1.status == 'Blocked') {
-            return res.status(200).json(structure(null, "You Blocked this Person So you cant send message", 200))
-        }
-        if (id1.reg == 'Invite') {
-            mailsent(id1.email)
-            return res.status(200).json(structure(null, "He is not in Whatsapp!! Invite Mail sent!", 200))
-        }
-
 
         let info = {
             sender_id: req.id,
-            receiver_id: req.body.receiver_id,
+            receiver_id: user.id,
             sentTime: new Date(),
             chat_message: req.body.chat_message,
             chat_reply_id: null,
@@ -133,7 +134,7 @@ const sendChat = async (req, res) => {
         res.status(200).json(structure(chat, "Message Sent Successfully", 200))
     }
     catch (err) {
-        res.status(400).json(structure(null, "" + err, 400))
+        res.status(400).json(structure(null, "a" + err, 400))
     }
 }
 
@@ -172,17 +173,13 @@ const dltchat = async (req, res) => {
 }
 
 
-let statusname;
-let name;
-let extn;
-let status_extn;
-let auth_userid;
+
 
 const storage = multer.diskStorage({
     destination: 'whatsappDocs',
     filename: function (req, file, cb) {
         cb(null, name + new Date().toISOString().replace(/:/g, "-") + path.extname(file.originalname));
-        extn = path.extname(file.originalname)
+        extn =path.extname(file.originalname)
     }
 })
 const maxSize = 100000 * 1000 * 1000;
@@ -200,7 +197,7 @@ const upload = multer({
     }
 }).single('myimage')
 
-let chat_sender;
+
 const sentImg = async (req, res) => {
     try {
         name = req.user
@@ -223,6 +220,7 @@ const sentImg = async (req, res) => {
                     }
                     req.body.chat_message = "media"
                     req.body.chat_MediaName = name + new Date() + extn
+                    console.log(extn)
                     req.body.sender_id = chat_sender
                     req.body.sentTime = new Date()
                     req.body.receiver_id = Number(req.params.id)
@@ -234,7 +232,6 @@ const sentImg = async (req, res) => {
                 catch (err) {
                     res.status(400).json(structure(null, "" + err, 400))
                 }
-
             }
         })
     }
@@ -248,8 +245,9 @@ const sentImg = async (req, res) => {
 const storage2 = multer.diskStorage({
     destination: 'whatsappStatus',
     filename: function (req, file, cb) {
-        cb(null, statusname + new Date().toISOString().replace(/:/g, "-") + path.extname(file.originalname));
         status_extn = path.extname(file.originalname)
+        cb(null, statusname + new Date().toISOString().replace(/:/g, "-") + path.extname(file.originalname));
+        
     }
 })
 
@@ -274,17 +272,19 @@ const sentStatus = async (req, res) => {
     statusname = req.user
     auth_userid = req.id
     console.log(auth_userid)
-    console.log(statusname)
+    
     upload2(req, res, async function (err) {
         if (err) {
             res.send(err);
         }
         else {
             try {
-                req.body.status_File_Name = statusname + status_extn
+                req.body.status_File_Name = statusname+status_extn
+                console.log(statusname)
                 req.body.sent_status_Time = new Date()
                 req.body.user_id = auth_userid
                 let fileDetails = req.body
+                console.log(status_extn)
                 filesUpload = await SendStatus.query().insert(fileDetails)
                 res.status(200).json(structure(null, "Status updated SuccessFully", 200))
 

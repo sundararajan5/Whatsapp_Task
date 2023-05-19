@@ -13,24 +13,27 @@ const authAdmin = (req, res, next) => {
     try {
         const token = req.headers['authorization']
         if (!token) {
-            return res.json(structure(null, "Token not present", 401))
+            return res.json(structure(null, "Token not Present in Auth", 401))
         }
 
         jwt_token.verify(token, process.env.ACCESS_TOKEN, async (err, user) => {
             if (err) {
-                res.status(403).json(structure(null, "token invalid", 403))
+                res.status(403).json(structure(null, "Token is invalid", 403))
             }
             try {
                 const userDetail = await User.query().findOne({ email: user.email })
                 if (!userDetail) {
-                    return res.status(404).send({ status: 404, message: "Email Mismatch" });
+                    return res.status(404).send({ status: 404, message: "Email Id Mismatch" });
                 }
                 const comparePass = await bcrypt.compare(user.password, userDetail.password)
                 if (userDetail.role == "admin" && comparePass==true) {
                     next();
                 }
                 else if (comparePass==false) {
-                    return res.status(404).send({ status: 404, message: "Password Mismatch" });
+                    return res.status(404).send({ status: 404, message: "You entered password mismatch",data:null  });
+                }
+                else{
+                    return res.status(404).send({ status: 404, message: "You not an admin ",data:null });
                 }
             }
         catch(err) {
@@ -48,18 +51,18 @@ const authUser = async (req, res, next) => {
         try {
             const token = req.headers['authorization'];
             if (!token) {
-                return res.json(structure(null, "Token not present", 401))
+                return res.json(structure(null, "Token not present in Auth", 401))
             }
 
             jwt_token.verify(token, process.env.ACCESS_TOKEN, async (err, user) => {
                 if (err) {
-                    res.status(403).json(structure(null, "token invalid", 403))
+                    res.status(403).json(structure(null, "Token is invalid", 403))
                 }
                 else {
                     try {
                         const userDetail = await User.query().findOne({ email: user.email })
                         if(!userDetail){
-                            return res.status(404).send({ status: 404, message: "Email Mismatch" });
+                            return res.status(404).send({ status: 404, message: "Email Id Mismatch" });
                         }
                         const comparePass = await bcrypt.compare(user.password, userDetail.password)
                         console.log(userDetail)
@@ -71,8 +74,11 @@ const authUser = async (req, res, next) => {
                             req.user = userDetail.name
                             next();
                         }
+                        else if(comparePass==false){
+                            return res.status(404).send({ status: 404, message: "You entered password mismatch" });
+                        }
                         else{
-                            return res.status(404).send({ status: 404, message: "Password Mismatch" });
+                            return res.status(404).send({ status: 404, message: "Admin Not Allowed" });
                         }
                     }
                     catch (err) {

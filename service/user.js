@@ -83,7 +83,7 @@ const updateUser = async (req, res) => {
         if (req.body.role) {
             return res.status(200).json(structure(null, "You Cannot change Role", 404))
         }
-        const updateDetails = await Users.query().findById(req.body.id).update(req.body);
+        const updateDetails = await Users.query().findById(req.id).update(req.body);
         res.status(200).json(structure(req.body, "Profile Updated", 200))
     }
     catch (err) {
@@ -94,7 +94,8 @@ const updateUser = async (req, res) => {
 
 const getAllusers = async (req, res) => {
     try {
-        const getAll = await Users.query().select('name', 'email', 'role', 'phonenumber').where('role', 'user')
+        console.log("sdfs")
+        const getAll = await Users.query().select('name', 'email', 'phonenumber').where('role', 'user')
         res.status(200).json(structure(getAll, "List of All userDetails", 200))
     }
     catch (err) {

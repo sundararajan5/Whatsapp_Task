@@ -49,7 +49,9 @@ const getById = async (req, res) => {
 
 const blkContact = async (req, res) => {
     const block = await Contact.query().where('reg_user_id', req.id).where('phonenumber', req.body.phonenumber)
-    console.log(block)
+    if(block.length==0){
+        return res.status(400).json(structure(null, "He / she not in your contact", 400))
+    }
     if (block[0].status == 'Blocked') {
         return res.status(400).json(structure(null, "Already Blocked", 400))
     }

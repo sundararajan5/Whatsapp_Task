@@ -12,4 +12,5 @@ router.get('/getChat/:id',auth.authUser,chatservice.getChatMsg)
 router.post('/sendStatus',auth.authUser,chatservice.sentStatus)
 router.delete('/dltStatus/:id',chatservice.dltstatus)
 
+
 module.exports = { router }

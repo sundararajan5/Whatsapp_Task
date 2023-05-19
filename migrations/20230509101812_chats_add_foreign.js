@@ -5,7 +5,7 @@
 exports.up = function(knex) {
     return knex.schema.table("chats", table => {
         table.foreign("sender_id").references("user.id");
-        table.foreign("receiver_id").references("contacts.id");
+        table.foreign("receiver_id").references("user.id");
     });
 };
 
