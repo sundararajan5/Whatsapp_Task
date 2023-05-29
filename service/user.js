@@ -48,7 +48,7 @@ const addUser = async (req, res) => {
     }
     catch (err) {
         console.log("error" + err)
-        res.status(400).json(structure("" + err, "", 400))
+        res.status(400).json(structure(`${err}`, "", 400))
     }
 }
 
@@ -63,7 +63,7 @@ const verification = async (req, res) => {
             res.status(200).json(structure(userDetails, "Your Account Verified Successfully"))
         }
         catch(err){
-            res.status(400).json(structure(null,""+err,400))
+            res.status(400).json(structure(null,`${err}`,400))
         }
         
     }
@@ -87,7 +87,7 @@ const updateUser = async (req, res) => {
         res.status(200).json(structure(req.body, "Profile Updated", 200))
     }
     catch (err) {
-        res.status(400).json(structure("" + err, "error", 400))
+        res.status(400).json(structure(`${err}`, "error", 400))
     }
 }
 
@@ -99,13 +99,9 @@ const getAllusers = async (req, res) => {
         res.status(200).json(structure(getAll, "List of All userDetails", 200))
     }
     catch (err) {
-        res.status(400).json(structure("" + err, "userDetails couldn't Fetch", 400))
+        res.status(400).json(structure(`${err}`, "userDetails couldn't Fetch", 400))
     }
 }
-
-
-
-
 
 
 module.exports = { addUser, updateUser, getAllusers, verification }

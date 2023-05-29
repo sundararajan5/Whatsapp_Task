@@ -29,7 +29,7 @@ const addContacts = async (req, res) => {
         res.status(200).json(structure(contactDetails, "Conatact Added Successfully", 200))
     }
     catch (err) {
-        res.status(400).json(structure(null,""+err, 400))
+        res.status(400).json(structure(null,`${err}`, 400))
     }
 }
 
@@ -41,7 +41,7 @@ const getById = async (req, res) => {
         res.status(400).json(structure(contacts, "Your Contact List ", 200))
     }
     catch (err) {
-        res.status(400).json(structure(null,"" + err,400))
+        res.status(400).json(structure(null,`${err}`,400))
     }
 
 }
@@ -50,7 +50,7 @@ const getById = async (req, res) => {
 const blkContact = async (req, res) => {
     const block = await Contact.query().where('reg_user_id', req.id).where('phonenumber', req.body.phonenumber)
     if(block.length==0){
-        return res.status(400).json(structure(null, "He / she not in your contact", 400))
+        return res.status(400).json(structure(null, "He/she not in your contact", 400))
     }
     if (block[0].status == 'Blocked') {
         return res.status(400).json(structure(null, "Already Blocked", 400))
@@ -62,9 +62,8 @@ const blkContact = async (req, res) => {
             return res.status(200).json(structure(null, "Blocked the Contact", 200))
         }
         catch(err){
-            res.status(400).json(structure(null,""+err,400))
+            res.status(400).json(structure(null,`${err}`,400))
         }
-        
     }
 }
 

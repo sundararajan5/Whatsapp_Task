@@ -65,7 +65,7 @@ const diff = async (req, res) => {
         res.status(200).json(structure(null, "Delete Time will changed ", 200))
     }
     catch (err) {
-        return res.status(400).json(structure(null, "" + err, 400))
+        return res.status(400).json(structure(null, `${err}`, 400))
     }
 
 }
@@ -99,7 +99,7 @@ const rplyChat = async (req, res) => {
         res.status(200).json(structure(rplychat, "Reply message Sent", 200))
     }
     catch (err) {
-        res.status(400).json(structure(null, "" + err, 400))
+        res.status(400).json(structure(null, `${err}`, 400))
     }
 }
 
@@ -134,7 +134,7 @@ const sendChat = async (req, res) => {
         res.status(200).json(structure(chat, "Message Sent Successfully", 200))
     }
     catch (err) {
-        res.status(400).json(structure(null, "a" + err, 400))
+        res.status(400).json(structure(null, `${err}`, 400))
     }
 }
 
@@ -168,7 +168,7 @@ const dltchat = async (req, res) => {
 
         }
     } catch (err) {
-        res.status(404).json(structure(null, "Cannot find User - " + err, 400))
+        res.status(404).json(structure(null, `${err}`, 400))
     }
 }
 
@@ -218,7 +218,7 @@ const sentImg = async (req, res) => {
                     if (id1 == null) {
                         return res.status(400).json(structure(null,"He/She is not in your Contact", 400))
                     }
-                    req.body.chat_message = "media"
+                    req.body.chat_message = "Media file"
                     req.body.chat_MediaName = name + new Date() + extn
                     console.log(extn)
                     req.body.sender_id = chat_sender
@@ -230,13 +230,13 @@ const sentImg = async (req, res) => {
 
                 }
                 catch (err) {
-                    res.status(400).json(structure(null, "" + err, 400))
+                    res.status(400).json(structure(null, `${err}`, 400))
                 }
             }
         })
     }
     catch (err) {
-        res.status(400).json(structure(null, "" + err, 400))
+        res.status(400).json(structure(null, `${err}`, 400))
     }
 
 }
@@ -290,7 +290,7 @@ const sentStatus = async (req, res) => {
 
             }
             catch (err) {
-                res.status(400).json(structure(null, "" + err, 400))
+                res.status(400).json(structure(null, `${err}`, 400))
             }
 
         }
@@ -320,7 +320,7 @@ const dltstatus = async (req, res) => {
             res.status(400).json(structure(null, "24 Hours not completed", 400))
         }
     } catch (err) {
-        res.status(404).json(structure(null, ""+err, 404))
+        res.status(404).json(structure(null, `${err}`, 404))
     }
 }
 
@@ -331,7 +331,7 @@ const getChatMsg = async (req, res) => {
         res.status(200).json(structure(contacts, "Chat messages", 200))
     }
     catch (err) {
-        res.status(404).json(structure(null, "" + err, 404))
+        res.status(404).json(structure(null, `${err}`, 404))
     }
 
 }

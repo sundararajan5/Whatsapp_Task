@@ -25,7 +25,7 @@ const GenerateToken = (req, res) => {
             res.status(200).json(structure(accestoken, "Log-in Successfully!! ", 200))
         }
         catch (err) {
-            res.status(404).json(structure(null, "Token not Generated " + err, 404))
+            res.status(404).json(structure(null, `Token not Generated ${err}`, 404))
         }
     }
 }

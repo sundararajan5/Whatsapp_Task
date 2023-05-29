@@ -65,9 +65,6 @@ const authUser = async (req, res, next) => {
                             return res.status(404).send({ status: 404, message: "Email Id Mismatch" });
                         }
                         const comparePass = await bcrypt.compare(user.password, userDetail.password)
-                        console.log(userDetail)
-                        
-                        console.log(comparePass)
                         if (userDetail.role == "user"&& comparePass == true) {
 
                             req.id = userDetail.id
