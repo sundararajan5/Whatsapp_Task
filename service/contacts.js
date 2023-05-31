@@ -14,7 +14,7 @@ const addContacts = async (req, res) => {
         if (user == null) {
             req.body.reg = "Invite"
         }
-        else if (user.phonenumber == req.body.phonenumber) {
+        else if (user.phonenumber == req.body.phonenumber){
             req.body.reg = "SignedIn"
         }
         let info = {
@@ -32,8 +32,6 @@ const addContacts = async (req, res) => {
         res.status(400).json(structure(null,`${err}`, 400))
     }
 }
-
-
 
 const getById = async (req, res) => {
     try {

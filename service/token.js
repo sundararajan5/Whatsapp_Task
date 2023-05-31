@@ -10,14 +10,13 @@ function structure(data, message, status) {
 const GenerateToken = (req, res) => {
 
     const info = req.body
-
     const JoiSchema = Joi.object({
         email: Joi.string().required(),
         password: Joi.string().required(),
     })
     const validate_Res = JoiSchema.validate(info);
     if (validate_Res.error) {
-        res.status(404).json(structure(null, "Joi Validation Error " + validate_Res.error, 404))
+        res.status(404).json(structure(null, "Joi Validation Error" + validate_Res.error, 404))
     }
     else {
         try {
