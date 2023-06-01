@@ -202,7 +202,6 @@ const sentImg = async (req, res) => {
     try {
         name = req.user
         chat_sender = req.id
-        console.log(chat_sender)
         upload(req, res, async function (err) {
             if (err) {
                 res.send(err);
@@ -220,7 +219,6 @@ const sentImg = async (req, res) => {
                     }
                     req.body.chat_message = "Media file"
                     req.body.chat_MediaName = name + new Date() + extn
-                    console.log(extn)
                     req.body.sender_id = chat_sender
                     req.body.sentTime = new Date()
                     req.body.receiver_id = Number(req.params.id)

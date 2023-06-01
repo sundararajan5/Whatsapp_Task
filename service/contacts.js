@@ -51,7 +51,7 @@ const blkContact = async (req, res) => {
         return res.status(400).json(structure(null, "He/she not in your contact", 400))
     }
     if (block[0].status == 'Blocked') {
-        return res.status(400).json(structure(null, "Already Blocked", 400))
+        return res.status(400).json(structure(null, "Already you blocked this contact", 400))
     }
     else {
         try {
