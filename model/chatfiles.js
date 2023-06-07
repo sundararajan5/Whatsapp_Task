@@ -5,6 +5,6 @@ Model.knex(knex);
 class ChatFiles extends Model {
     static get tableName() {
         return 'chatfiles';
-    } 
     }
+}
 module.exports = ChatFiles;

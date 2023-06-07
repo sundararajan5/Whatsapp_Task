@@ -6,7 +6,6 @@ exports.up = function(knex) {
     return knex.schema.table("contacts", table => {
         table.foreign("reg_user_id").references("user.id");
     });
-  
 };
 
 /**
@@ -14,7 +13,6 @@ exports.up = function(knex) {
  * @returns { Promise<void> }
  */
 exports.down = function(knex) {
-
     return knex.schema.table("contacts", table => {
         table.dropForeign("reg_user_id");
     });

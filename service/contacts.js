@@ -5,7 +5,6 @@ function structure(data, message, status) {
     return { status, message, data }
 }
 
-
 const addContacts = async (req, res) => {
     console.log(req.body.id)
     try {
@@ -64,6 +63,5 @@ const blkContact = async (req, res) => {
         }
     }
 }
-
 
 module.exports = { addContacts, getById, blkContact }

@@ -1,15 +1,14 @@
-const Chat = require('../model/chats')
-const Dlt = require('../model/dltTiming')
-const SendStatus = require('../model/status')
-const nodemailer = require('nodemailer')
 const path = require('path');
 const multer = require('multer');
 const timediff = require('timediff');
 const { date } = require('joi');
+
+const Chat = require('../model/chats')
+const Dlt = require('../model/dltTiming')
+const SendStatus = require('../model/status')
+const mailTemplate = require("../template/MailTemplate")
 const Contact = require('../model/contact');
 const Users = require('../model/user');
-const { log } = require('console');
-
 
 let statusname;
 let name;
@@ -21,39 +20,6 @@ let chat_sender;
 function structure(data, message, status) {
     return { status, message, data }
 }
-
-
-const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-        user: 'sundararajan@xponential.digital',
-        pass: 'fuoefbkbkblkasgr'
-    }
-});
-
-function mailsent(receiverMail) {
-    const mailOptions = {
-        from: 'sundararajan@xponential.digital',
-        to: receiverMail,
-        subject: "You are Not in Whatsapp!! Download Whatsapp Now!!",
-        text: `Let's chat on WhatsApp! It's a fast, simple, and secure app we can use to message and call each other for free. Get it at https://whatsapp.com/dl/`
-
-
-    };
-
-    transporter.sendMail(mailOptions, function (error, info) {
-        if (error) {
-            console.log(error)
-        }
-        else {
-            console.log("Mail sent successfully" + info.response)
-        }
-    });
-}
-
-
-
-
 
 const diff = async (req, res) => {
     try {
@@ -70,21 +36,20 @@ const diff = async (req, res) => {
 
 }
 
-
 const rplyChat = async (req, res) => {
     try {
         const user = await Users.query().findById(req.body.receiver_id)
         if (!user) {
-            return res.status(400).json(structure(null,"User Not Exixts in your contact", 400))
+            return res.status(400).json(structure(null, "User Not Exixts in your contact", 400))
         }
         const id1 = await Contact.query().findOne({ reg_user_id: req.id, phonenumber: user.phonenumber })
         const cnt = await Chat.query().findOne({ id: req.body.chat_reply_id })
-    
+
         if (!((cnt.sender_id == req.id && cnt.receiver_id == req.body.receiver_id) || (cnt.sender_id == req.body.receiver_id && cnt.receiver_id == req.id))) {
-             return res.status(400).json(structure(null,"This is not your chat reply", 400))
+            return res.status(400).json(structure(null, "This is not your chat reply", 400))
         }
         if (id1 == null) {
-            return res.status(400).json(structure(null,"He/She is not in your Contact", 400))
+            return res.status(400).json(structure(null, "He/She is not in your Contact", 400))
         }
 
         let info = {
@@ -105,21 +70,19 @@ const rplyChat = async (req, res) => {
 
 const sendChat = async (req, res) => {
     try {
-        const user = await Users.query().findOne({email:req.body.email})
+        const user = await Users.query().findOne({ email: req.body.email })
         console.log(user)
         if (!user) {
             const invitePerson = await Contact.query().findOne({ reg_user_id: req.id, email: req.body.email })
-         if(invitePerson.reg =="Invite"){
-            mailsent(invitePerson.email)
-            return res.status(200).json(structure(null, "He is not in Whatsapp!! Invite Mail sent!", 200))
-        }
-            return res.status(400).json(structure(null,"User Not Exixts in your contact", 400))
+            if (invitePerson.reg == "Invite") {
+                mailTemplate.InviteMail(invitePerson.email)
+                return res.status(200).json(structure(null, "He is not in Whatsapp!! Invite Mail sent!", 200))
+            }
+            return res.status(400).json(structure(null, "User Not Exixts in your contact", 400))
         }
         const id1 = await Contact.query().findOne({ reg_user_id: req.id, phonenumber: user.phonenumber })
-        console.log(id1)
-        console.log(req.id)
         if (id1 == null) {
-            return res.status(400).json(structure(null,"He/She is not in your Contact", 400))
+            return res.status(400).json(structure(null, "He/She is not in your Contact", 400))
         }
 
         let info = {
@@ -138,14 +101,13 @@ const sendChat = async (req, res) => {
     }
 }
 
-
 const dltchat = async (req, res) => {
 
     try {
         const reqParams = Number(req.params.id)
         const cnt = await Chat.query().findOne({ id: reqParams })
         if (!((cnt.sender_id == req.id && cnt.receiver_id == req.body.receiver_id) || (cnt.sender_id == req.body.receiver_id && cnt.receiver_id == req.id))) {
-            return res.status(400).json(structure(null,"Ivalid users Chat reply message", 400))
+            return res.status(400).json(structure(null, "Ivalid users Chat reply message", 400))
         }
         const chatDetail = await Chat.query().findById(req.params.id)
         const time = timediff(chatDetail.sentTime, new Date(), 'H')
@@ -168,18 +130,15 @@ const dltchat = async (req, res) => {
 
         }
     } catch (err) {
-        res.status(404).json(structure(null, `${err}`, 400))
+        res.status(400).json(structure(null, `${err}`, 400))
     }
 }
-
-
-
 
 const storage = multer.diskStorage({
     destination: 'whatsappDocs',
     filename: function (req, file, cb) {
         cb(null, name + new Date().toISOString().replace(/:/g, "-") + path.extname(file.originalname));
-        extn =path.extname(file.originalname)
+        extn = path.extname(file.originalname)
     }
 })
 const maxSize = 100000 * 1000 * 1000;
@@ -193,10 +152,9 @@ const upload = multer({
         if (mimetype && extname1) {
             return callb(null, true);
         }
-        callb(structure(null, "Uploaded file not similar to JPEG,JPG PNG,PDF", 404))
+        callb(structure(null, "Uploaded file not similar to JPEG,JPG PNG,PDF", 400))
     }
 }).single('myimage')
-
 
 const sentImg = async (req, res) => {
     try {
@@ -211,11 +169,11 @@ const sentImg = async (req, res) => {
 
                     const user = await Users.query().findById(req.params.id)
                     if (!user) {
-                        return res.status(400).json(structure(null,"Enter a valid User!!", 400))
+                        return res.status(400).json(structure(null, "Enter a valid User!!", 400))
                     }
                     const id1 = await Contact.query().findOne({ reg_user_id: chat_sender, phonenumber: user.phonenumber })
                     if (id1 == null) {
-                        return res.status(400).json(structure(null,"He/She is not in your Contact", 400))
+                        return res.status(400).json(structure(null, "He/She is not in your Contact", 400))
                     }
                     req.body.chat_message = "Media file"
                     req.body.chat_MediaName = name + new Date() + extn
@@ -239,16 +197,14 @@ const sentImg = async (req, res) => {
 
 }
 
-
 const storage2 = multer.diskStorage({
     destination: 'whatsappStatus',
     filename: function (req, file, cb) {
         status_extn = path.extname(file.originalname)
         cb(null, statusname + new Date().toISOString().replace(/:/g, "-") + path.extname(file.originalname));
-        
+
     }
 })
-
 
 const upload2 = multer({
     storage: storage2,
@@ -261,7 +217,7 @@ const upload2 = multer({
             return callb(null, true);
         }
 
-        callb(structure(null, "Uploaded file not similar to JPEG,JPG PNG,PDF", 404))
+        callb(structure(null, "Uploaded file not similar to JPEG,JPG PNG,PDF", 400))
     }
 }).single('myStatusImage')
 
@@ -270,14 +226,14 @@ const sentStatus = async (req, res) => {
     statusname = req.user
     auth_userid = req.id
     console.log(auth_userid)
-    
+
     upload2(req, res, async function (err) {
         if (err) {
             res.send(err);
         }
         else {
             try {
-                req.body.status_File_Name = statusname+status_extn
+                req.body.status_File_Name = statusname + status_extn
                 console.log(statusname)
                 req.body.sent_status_Time = new Date()
                 req.body.user_id = auth_userid
@@ -310,7 +266,7 @@ const dltstatus = async (req, res) => {
                 res.status(200).json(structure(null, "Status Deleted Successfully", 200))
             }
             catch {
-                res.status(404).json(structure(null, "Status not Deleted" + err, 404))
+                res.status(400).json(structure(null, "Status not Deleted" + err, 400))
             }
 
         }
@@ -318,7 +274,7 @@ const dltstatus = async (req, res) => {
             res.status(400).json(structure(null, "24 Hours not completed", 400))
         }
     } catch (err) {
-        res.status(404).json(structure(null, `${err}`, 404))
+        res.status(400).json(structure(null, `${err}`, 400))
     }
 }
 
@@ -329,10 +285,9 @@ const getChatMsg = async (req, res) => {
         res.status(200).json(structure(contacts, "Chat messages", 200))
     }
     catch (err) {
-        res.status(404).json(structure(null, `${err}`, 404))
+        res.status(400).json(structure(null, `${err}`, 400))
     }
 
 }
-
 
 module.exports = { sendChat, dltchat, sentImg, diff, getChatMsg, sentStatus, dltstatus, rplyChat }

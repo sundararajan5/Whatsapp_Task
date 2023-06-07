@@ -6,7 +6,7 @@ Model.knex(knex);
 class Chat extends Model {
     static get tableName() {
         return 'chats';
-    } 
+    }
     static get jsonSchema() {
         return {
             type: 'object',
@@ -20,19 +20,19 @@ class Chat extends Model {
         }
     }
     static get relationMappings() {
-       return {
-        owner:{
-            relation:Model.BelongsToOneRelation,
-            modelClass:Contact,
-            join:{
-                from: 'chats.receiver_id',
-                to:'contacts.id'
+        return {
+            owner: {
+                relation: Model.BelongsToOneRelation,
+                modelClass: Contact,
+                join: {
+                    from: 'chats.receiver_id',
+                    to: 'contacts.id'
+                }
+
             }
-
         }
-       }
     }
 
 
-    }
+}
 module.exports = Chat;

@@ -5,6 +5,6 @@ Model.knex(knex);
 class DltTiming extends Model {
     static get tableName() {
         return 'timing';
-    } 
     }
+}
 module.exports = DltTiming;

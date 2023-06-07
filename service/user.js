@@ -1,9 +1,11 @@
-const Users = require("../model/user");
 const bcrypt = require("bcrypt");
-const nodemailer = require('nodemailer')
 const otpGenerator = require('otp-generator')
 const otp = require('generate-password');
 const { symbol, string } = require("joi");
+
+const Users = require("../model/user");
+const mailTemplate = require("../template/MailTemplate")
+
 
 let otp_Mail;
 let userdetails = {}
@@ -11,51 +13,23 @@ let userdetails = {}
 function structure(data, message, status) {
     return { status, message, data }
 }
-const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-        user: 'sundararajan@xponential.digital',
-        pass: 'fuoefbkbkblkasgr'
-    }
-});
-
-function mailsent(receiverMail, otp) {
-    const mailOptions = {
-        from: 'sundararajan@xponential.digital',
-        to: receiverMail,
-        subject: 'Whatsapp Account Created',
-        text: `Your OTP is : ${otp}`
-
-    };
-
-    transporter.sendMail(mailOptions, function (error, info) {
-        if (error) {
-            console.log(error)
-        }
-        else {
-            console.log("Mail sent successfully" + info.response)
-        }
-    });
-}
 
 
 const addUser = async (req, res) => {
     try {
         userdetails = req.body
         otp_Mail = otpGenerator.generate(6, { digits: true, specialChars: false, lowerCaseAlphabets: false, upperCaseAlphabets: false });
-        mailsent(userdetails.email, otp_Mail)
+        mailTemplate.SignUpMail(userdetails.email, otp_Mail)
         res.status(200).json(structure(userdetails, "Verification Mail Sent sucessfully", 200))
     }
     catch (err) {
-        console.log("error" + err)
         res.status(400).json(structure(`${err}`, "", 400))
     }
 }
 
 
 const verification = async (req, res) => {
-    console.log(userdetails)
-    const pass = await bcrypt.hash(userdetails.password, 5)
+    const pass = bcrypt.hashSync(userdetails.password, 5)
     userdetails.password = pass
     if (otp_Mail == req.body.otp) {
         try {
@@ -77,7 +51,7 @@ const verification = async (req, res) => {
 const updateUser = async (req, res) => {
     try {
         if (req.body.password) {
-            const pass = await bcrypt.hash(req.body.password, 5)
+            const pass = await bcrypt.hashSync(req.body.password, 5)
             req.body.password = pass
         }
         if (req.body.role) {
@@ -94,7 +68,6 @@ const updateUser = async (req, res) => {
 
 const getAllusers = async (req, res) => {
     try {
-        console.log("sdfs")
         const getAll = await Users.query().select('name', 'email', 'phonenumber').where('role', 'user')
         res.status(200).json(structure(getAll, "List of All userDetails", 200))
     }
@@ -102,6 +75,5 @@ const getAllusers = async (req, res) => {
         res.status(400).json(structure(`${err}`, "userDetails couldn't Fetch", 400))
     }
 }
-
 
 module.exports = { addUser, updateUser, getAllusers, verification }

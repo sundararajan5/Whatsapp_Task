@@ -18,6 +18,5 @@ class StatusTable extends Model {
             }
         }
     }
-
-    }
+}
 module.exports = StatusTable;

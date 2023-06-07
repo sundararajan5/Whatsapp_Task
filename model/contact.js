@@ -23,7 +23,7 @@ class Contact extends Model {
     static get relationMappings() {
         return {
             owner: {
-                relation: Model.HasOneRelation, 
+                relation: Model.HasOneRelation,
                 modelClass: Chat,
                 join: {
                     from: 'contacts.id',

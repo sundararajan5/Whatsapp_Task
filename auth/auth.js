@@ -1,13 +1,13 @@
 const jwt_token = require('jsonwebtoken');
 require('dotenv').config();
-const User = require('../model/user')
 const bcrypt = require('bcrypt');
+
+const User = require('../model/user')
 
 
 function structure(data, message, statusCode) {
     return { statusCode, message, data }
 }
-
 
 const authAdmin = (req, res, next) => {
     try {
@@ -15,7 +15,6 @@ const authAdmin = (req, res, next) => {
         if (!token) {
             return res.json(structure(null, "Token not Present in Auth", 401))
         }
-
         jwt_token.verify(token, process.env.ACCESS_TOKEN, async (err, user) => {
             if (err) {
                 res.status(403).json(structure(null, "Token is invalid", 403))
@@ -25,11 +24,11 @@ const authAdmin = (req, res, next) => {
                 if (!userDetail) {
                     return res.status(404).send({ status: 404, message: "Email Id Mismatch" });
                 }
-                const comparePass = await bcrypt.compare(user.password, userDetail.password)
+                const comparePass = bcrypt.compareSync(user.password, userDetail.password)
                 if (userDetail.role == "admin" && comparePass==true) {
                     next();
                 }
-                else if (comparePass==false) {
+                else if (comparePass==false){
                     return res.status(404).send({ status: 404, message: "You entered password mismatch",data:null  });
                 }
                 else{
@@ -42,9 +41,8 @@ const authAdmin = (req, res, next) => {
             })
         }
     catch(err) {
-            res.json(structure(null, ""+err, 500))
+            res.json(structure(null, ""+err, 400))
         }
-
     }
 
 const authUser = async (req, res, next) => {
@@ -53,7 +51,6 @@ const authUser = async (req, res, next) => {
             if (!token) {
                 return res.json(structure(null, "Token not present in Auth", 401))
             }
-
             jwt_token.verify(token, process.env.ACCESS_TOKEN, async (err, user) => {
                 if (err) {
                     res.status(403).json(structure(null, "Token is invalid", 403))
@@ -64,7 +61,7 @@ const authUser = async (req, res, next) => {
                         if(!userDetail){
                             return res.status(404).send({ status: 404, message: "Email Id Mismatch" });
                         }
-                        const comparePass = await bcrypt.compare(user.password, userDetail.password)
+                        const comparePass = bcrypt.compareSync(user.password, userDetail.password)
                         if (userDetail.role == "user"&& comparePass == true) {
 
                             req.id = userDetail.id
@@ -87,9 +84,6 @@ const authUser = async (req, res, next) => {
         catch (err) {
             res.status(400).json(structure(null, "error"+err, 400))
         }
-
     }
-
-
 
     module.exports = { authAdmin, authUser }
