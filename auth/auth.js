@@ -45,7 +45,7 @@ const authAdmin = (req, res, next) => {
         }
     }
 
-const authUser = async (req, res, next) => {
+const authUser = async (req, res, next)=>{
         try {
             const token = req.headers['authorization'];
             if (!token) {
