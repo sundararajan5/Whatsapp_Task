@@ -8,7 +8,7 @@ const mailTemplate = require("../template/MailTemplate");
 
 
 let otp_Mail;
-let userdetails = {};
+// let userdetails = {};
 
 function structure(data, message, status) {
     return { status, message, data }
@@ -17,33 +17,50 @@ function structure(data, message, status) {
 
 const addUser = async (req, res) => {
     try {
-        userdetails = req.body
-        otp_Mail = otpGenerator.generate(6, { digits: true, specialChars: false, lowerCaseAlphabets: false, upperCaseAlphabets: false });
+        otp_Mail = otpGenerator.generate(6, { digits: true, specialChars: false, lowerCaseAlphabets: false, upperCaseAlphabets: false });   
+        req.body.OTP = otp_Mail;
+        const pass = bcrypt.hashSync(req.body.password, 5);
+        req.body.password = pass;
+        req.body.accountStatus ="Not Verified"
+        let userdetails = req.body;
+        const addUserData = await Users.query().insert(userdetails);
         mailTemplate.SignUpMail(userdetails.email, otp_Mail);
         res.status(200).json(structure(userdetails, "Verification Mail Sent sucessfully", 200));
     }
-    catch (err) {
+    catch(err){
         res.status(400).json(structure(`${err}`, "", 400));
     }
 }
 
 
 const verification = async (req, res) => {
-    const pass = bcrypt.hashSync(userdetails.password, 5);
-    userdetails.password = pass
-    if (otp_Mail == req.body.otp) {
-        try {
-            const userDetails = await Users.query().insert(userdetails);
-            res.status(200).json(structure(userDetails, "Your Account Verified Successfully"));
+    try{
+
+        let userData = {
+            email:req.body.email,
+            OTP: req.body.OTP
         }
-        catch(err){
-            res.status(400).json(structure(null,`${err}`,400));
+    
+        const userValue = await Users.query().findOne({
+            email:req.body.email
+        })
+        if(userData.OTP == userValue.OTP){
+            req.body.accountStatus="Verified"
+            const verify = await Users.query().findOne({
+                email:userData.email
+            }).update(req.body);
+    
+            res.status(200).json(structure(null, "Your Account Verified Successfully",200));
         }
-        
+        else{
+            res.status(200).json(structure(null, "OTP mismatch",400));
+        }
+
     }
-    else {
-        res.status(200).json(structure(null, "Otp Is Incorrect"));
+    catch(err){
+        res.status(400).json(structure(`${err}`, "error", 400));
     }
+   
 
 }
 

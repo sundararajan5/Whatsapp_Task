@@ -6,7 +6,7 @@ exports.up = function(knex) {
     return knex.schema.createTable("statusTable", table => {
         table.increments("id").primary();
         table.integer("user_id").unsigned().references("user.id");
-        table.string("status_File_Name").notNullable()
+        table.string("status_file_name").notNullable()
         table.timestamp("sent_Status_Time").notNullable()
         table.timestamp('created_at').defaultTo(knex.fn.now())
         table.timestamp('updated_at').defaultTo(knex.fn.now())

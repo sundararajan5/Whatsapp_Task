@@ -8,6 +8,10 @@ function structure(data, message, status) {
 const addContacts = async (req, res) => {
     try {
         const user = await Users.query().findOne({ phonenumber: req.body.phonenumber });
+        console.log(user)
+        if(user.accountStatus=="Not Verified"){
+            return res.status(400).json(structure(null," Your account is not verified ", 400));
+        }
         if (user == null) {
             req.body.reg = "Invite"
         }

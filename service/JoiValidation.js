@@ -28,9 +28,9 @@ const contactValidation = async(req,res,next)=>{
         name:Joi.string().required(),
         phonenumber:Joi.number().required(),
         email: Joi.string().required(),
-        reg: Joi.string().required(),
-        status:Joi.string().required(),
-        reg_user_id: Joi.number().required()
+        reg: Joi.string(),
+        status:Joi.string(),
+        reg_user_id: Joi.number()
     })
 
     const validate = JoiSchema.validate(req.body);

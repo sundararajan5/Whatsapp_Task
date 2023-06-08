@@ -8,7 +8,7 @@ exports.up = function(knex) {
         table.integer("receiver_id").unsigned();
         table.integer("sender_id").unsigned();
         table.string("chat_message").notNullable()
-        table.string("chat_MediaName").notNullable()
+        table.string("chat_mediaName").notNullable()
         table.integer('chat_reply_id').unsigned().references('chats.id')
         table.timestamp("sentTime").notNullable()
         table.timestamp('created_at').defaultTo(knex.fn.now())

@@ -10,6 +10,8 @@ exports.up = function(knex) {
         table.string('password', 255)
         table.string('role').defaultTo("user")
         table.bigInteger('phonenumber').unique()
+        table.integer('otp')
+        table.string('accountStatus')
         table.timestamp('created_at').defaultTo(knex.fn.now())
         table.timestamp('updated_at').defaultTo(knex.fn.now())
     })
