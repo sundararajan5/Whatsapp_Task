@@ -1,8 +1,8 @@
 const express = require('express');
 const app = express();
 const main = require('./routes/main');
-app.use(express.json())
-app.use(main.app)
+app.use(express.json());
+app.use(main.app);
 
 
 app.listen(5000,()=>{

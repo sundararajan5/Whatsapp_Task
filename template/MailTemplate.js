@@ -26,7 +26,7 @@ function SignUpMail(receiverMail, otp) {
             console.log("Mail sent successfully" + info.response)
         }
     });
-}
+};
 
 function InviteMail(receiverMail) {
     const mailOptions = {
@@ -46,6 +46,6 @@ function InviteMail(receiverMail) {
             console.log("Mail sent successfully" + info.response)
         }
     });
-}
+};
 
 module.exports = { SignUpMail, InviteMail }
