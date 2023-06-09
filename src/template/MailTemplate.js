@@ -19,10 +19,10 @@ function SignUpMail(receiverMail, otp) {
 
     transporter.sendMail(mailOptions, function (error, info) {
         if (error) {
-            console.log(error)
+            res.status(400).json(response.structure(null, `${error}`, 400));
         }
         else {
-            console.log("Mail sent successfully" + info.response)
+            res.status(200).json(response.structure(info.response, "Mail sent successfully", 200));
         }
     });
 };
@@ -33,8 +33,6 @@ function InviteMail(receiverMail) {
         to: receiverMail,
         subject: "You are Not in Whatsapp!! Download Whatsapp Now!!",
         text: `Let's chat on WhatsApp! It's a fast, simple, and secure app we can use to message and call each other for free. Get it at https://whatsapp.com/dl/`
-
-
     };
 
     transporter.sendMail(mailOptions, function (error, info) {
